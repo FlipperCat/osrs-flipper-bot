@@ -1,0 +1,19 @@
+# Recorder stage
+dxcam>=0.0.5
+pywin32>=306
+pynput>=1.7.6
+numpy>=1.26
+
+# Training stage (pulled later; listed here so the venv is one-shot)
+torch>=2.2
+torchvision>=0.17
+
+# RL stage (optional, only needed for Stage 3)
+gymnasium>=0.29
+stable-baselines3>=2.3
+
+# Input emulation (Stage 4 — live rollout)
+pydirectinput>=1.0.4
+
+# Logging
+tensorboard>=2.16
