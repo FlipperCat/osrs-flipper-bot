@@ -10,8 +10,8 @@
 - `train/dataset.py` — `OSRSFlipDataset`: reads recorder sessions, builds multi-head BC labels. `python -m train.dataset <data_root>` to inspect.
 - `train/transforms.py` — HSV color masks + resize + frame-stack concat (per-tower input).
 - `train/config.py` — `DataConfig`: action grid, vocab, mask specs (PLACEHOLDER colors — retune).
-- `model/policy.py` *(not yet)* — two-tower CNN + multi-head action policy.
-- `train/bc.py` *(not yet)* — behavioral cloning loop.
+- `model/policy.py` — `FlipperPolicy`: two ConvNeXt-Tiny towers (timm) + trunk + six action heads.
+- `train/bc.py` — BC training script. Device auto (CUDA/MPS/CPU), backbone-freeze warmup, per-session temporal val split, checkpoints to `checkpoints/{last,best}.pt`.
 - `env/osrs_env.py` *(not yet)* — gymnasium wrapper for online play / RL.
 
 ## Constraints (hard)
