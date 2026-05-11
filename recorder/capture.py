@@ -1,10 +1,14 @@
-"""Capture orchestrator.
+"""Capture orchestrator. Cross-platform (Windows + macOS).
 
 DO NOT RUN until:
   1. `pip install -r requirements.txt` has been done in a venv
   2. The OSRS client is open at a locked resolution and UI scale
   3. ge_menu_bbox + inventory_bbox in config.py have been REMEASURED
-     against the actual GE interface and inventory positions
+     against the actual GE interface and inventory positions, on the OS
+     you are recording on (don't reuse Windows measurements on macOS)
+
+macOS only: grant Screen Recording AND Accessibility permissions to the
+terminal/python binary in System Settings → Privacy & Security.
 
 Usage (later, after the above):
     python -m recorder.capture --duration 600
@@ -23,8 +27,8 @@ from pathlib import Path
 
 import numpy as np
 
+from recorder import backends
 from recorder.config import CaptureConfig
-from recorder.window import find_client_hwnd, get_client_bbox, is_foreground
 from recorder.input_hook import InputHook
 from recorder.writer import SessionWriter
 
@@ -35,14 +39,14 @@ def crop(frame: np.ndarray, bbox: tuple[int, int, int, int]) -> np.ndarray:
 
 
 def run(cfg: CaptureConfig, duration_s: float, dry_run: bool = False) -> int:
-    hwnd = find_client_hwnd(cfg.window_title_substr)
-    if hwnd is None:
+    handle = backends.find_window(cfg.window_title_substr)
+    if handle is None:
         print(f"Client window not found (title contains '{cfg.window_title_substr}'). Aborting.")
         return 1
 
-    bbox = get_client_bbox(hwnd)
+    bbox = backends.get_client_bbox(handle)
     cw, ch = bbox[2] - bbox[0], bbox[3] - bbox[1]
-    print(f"Client hwnd={hwnd} bbox={bbox} client_size=({cw}, {ch})")
+    print(f"Platform: {sys.platform}  bbox={bbox}  client_size=({cw}, {ch})")
     print(f"GE menu bbox (relative): {cfg.ge_menu_bbox}")
     print(f"Inventory bbox (relative): {cfg.inventory_bbox}")
 
@@ -50,9 +54,7 @@ def run(cfg: CaptureConfig, duration_s: float, dry_run: bool = False) -> int:
         print("[dry-run] window detection ok; exiting without capturing.")
         return 0
 
-    import dxcam  # imported lazily so the module loads even before deps are installed
-
-    cam = dxcam.create(output_color="RGB")
+    cam = backends.Capture()
     cam.start(region=bbox, target_fps=cfg.fps)
 
     hook = InputHook(log_mouse_move=cfg.log_mouse_move)
@@ -61,6 +63,7 @@ def run(cfg: CaptureConfig, duration_s: float, dry_run: bool = False) -> int:
     writer = SessionWriter(
         root=Path(cfg.output_root),
         meta={
+            "platform": sys.platform,
             "config": cfg.to_dict(),
             "client_bbox": bbox,
             "client_size": (cw, ch),
@@ -91,7 +94,7 @@ def run(cfg: CaptureConfig, duration_s: float, dry_run: bool = False) -> int:
     frames = 0
     try:
         while not stop_flag["v"] and time.monotonic() < t_end:
-            if not is_foreground(hwnd):
+            if not backends.is_foreground(handle):
                 time.sleep(0.05)
                 continue
 

@@ -1,10 +1,17 @@
-# Recorder stage
-dxcam>=0.0.5
-pywin32>=306
-pynput>=1.7.6
+# Cross-platform
 numpy>=1.26
+pynput>=1.7.6
 
-# Training stage (pulled later; listed here so the venv is one-shot)
+# Recorder — Windows
+dxcam>=0.0.5; platform_system == "Windows"
+pywin32>=306; platform_system == "Windows"
+
+# Recorder — macOS
+mss>=9.0; platform_system == "Darwin"
+pyobjc-framework-Quartz>=10.0; platform_system == "Darwin"
+pyobjc-framework-Cocoa>=10.0; platform_system == "Darwin"
+
+# Training stage
 torch>=2.2
 torchvision>=0.17
 
@@ -12,8 +19,9 @@ torchvision>=0.17
 gymnasium>=0.29
 stable-baselines3>=2.3
 
-# Input emulation (Stage 4 — live rollout)
-pydirectinput>=1.0.4
+# Live rollout input emulation
+pydirectinput>=1.0.4; platform_system == "Windows"
+pyautogui>=0.9.54; platform_system == "Darwin"
 
 # Logging
 tensorboard>=2.16

@@ -1,7 +1,7 @@
 # OSRS Flipper Bot
 
 **Goal:** Train a PyTorch vision policy to flip items on the in-game GE of a private OSRS server, learning from pixels alone using a private overlay plugin as visual cue.
-**Tech:** Python 3.12, PyTorch, `dxcam` (screen capture), `pydirectinput` (mouse/keys), `pywin32` (window mgmt), `gymnasium` + `stable-baselines3` (RL stage), SQLite (demo logs).
+**Tech:** Python 3.12, PyTorch, `pynput` (input capture, cross-platform), platform backends in `recorder/backends/` — Windows: `dxcam` + `pywin32` + `pydirectinput`; macOS: `mss` + `pyobjc` (Quartz/AppKit) + `pyautogui`. `gymnasium` + `stable-baselines3` for the RL stage. SQLite for demo logs.
 **Status:** Pre-implementation. Architecture committed — see `project.md`. Next step: build `recorder/` and capture first 1h demo.
 
 ## Read first
@@ -25,6 +25,7 @@
 - Don't record demos at variable resolution/UI scale — lock both before capture.
 
 ## Gotchas (will fill as encountered)
-- `pydirectinput` over `pyautogui` — DirectInput survives game-side input filtering.
-- `dxcam` is faster than `mss` on Windows but needs the OSRS window in the foreground.
+- **Cross-platform**: `recorder/backends/{win,mac}.py` is the OS-isolated layer. Anything OS-specific belongs there, not in `capture.py`.
+- On Windows: `pydirectinput` > `pyautogui` — DirectInput survives game-side input filtering. `dxcam` is faster than `mss`.
+- On macOS: terminal/python needs **Screen Recording** + **Accessibility** permission. Bboxes must be remeasured per-OS — Quartz returns outer window bounds (incl. title bar), `win32gui` returns the client area.
 - Server-DB GP delta is the cleanest RL reward — query directly, don't OCR the bank.

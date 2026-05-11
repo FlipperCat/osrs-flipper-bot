@@ -18,9 +18,10 @@ Pixel-only PyTorch vision policy that learns to flip items on the Grand Exchange
 
 | Layer | Choice | Why |
 |---|---|---|
-| Screen capture | `dxcam` | ~240 fps on Windows; fastest path |
-| Input emulation | `pydirectinput` | DirectInput; survives input filtering that ignores `SendInput` |
-| Window mgmt | `pywin32` | Foreground check + bbox lookup for clamp |
+| Screen capture | `dxcam` (Windows) / `mss` (macOS) | dxcam is ~240 fps on Win; mss is the cross-platform fallback (~30 fps, fine for our budget) |
+| Input emulation | `pydirectinput` (Windows) / `pyautogui` (macOS) | DirectInput survives game input filtering on Win; pyautogui works fine on macOS with Accessibility perms |
+| Window mgmt | `pywin32` (Windows) / `pyobjc` Quartz+AppKit (macOS) | Foreground check + bbox lookup for clamp |
+| Backend abstraction | `recorder/backends/{win,mac}.py` | All OS-specific code lives behind one interface — `capture.py` is OS-agnostic |
 | Model framework | PyTorch 2.x | Standard; ConvNeXt / ViT pretrained available |
 | Encoder | ConvNeXt-Tiny (ImageNet-pretrained) | Strong on text + colored-overlay regimes; small enough for one GPU |
 | RL (later) | `gymnasium` + `stable-baselines3` (PPO) | Stable, debuggable |
