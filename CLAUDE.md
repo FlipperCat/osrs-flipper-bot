@@ -6,10 +6,13 @@
 
 ## Read first
 - `project.md` — full architecture, action space, training stages, data plan. SOURCE OF TRUTH.
-- `recorder/` — demo capture (frames + actions) — START HERE before any training
-- `model/policy.py` — two-tower CNN + multi-head action policy
-- `train/bc.py` — behavioral cloning loop
-- `env/osrs_env.py` — gymnasium wrapper for online play / RL
+- `recorder/` — demo capture (frames + actions). Cross-platform via `recorder/backends/{win,mac}.py`.
+- `train/dataset.py` — `OSRSFlipDataset`: reads recorder sessions, builds multi-head BC labels. `python -m train.dataset <data_root>` to inspect.
+- `train/transforms.py` — HSV color masks + resize + frame-stack concat (per-tower input).
+- `train/config.py` — `DataConfig`: action grid, vocab, mask specs (PLACEHOLDER colors — retune).
+- `model/policy.py` *(not yet)* — two-tower CNN + multi-head action policy.
+- `train/bc.py` *(not yet)* — behavioral cloning loop.
+- `env/osrs_env.py` *(not yet)* — gymnasium wrapper for online play / RL.
 
 ## Constraints (hard)
 - **Pixel-only input.** Plugin internals are private and OFF-LIMITS as a teacher signal. Model learns from RGB + HSV color masks only.
