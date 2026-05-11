@@ -7,12 +7,16 @@
 ## Read first
 - `project.md` — full architecture, action space, training stages, data plan. SOURCE OF TRUTH.
 - `recorder/` — demo capture (frames + actions). Cross-platform via `recorder/backends/{win,mac}.py`.
-- `train/dataset.py` — `OSRSFlipDataset`: reads recorder sessions, builds multi-head BC labels. `python -m train.dataset <data_root>` to inspect.
+- `train/dataset.py` — `OSRSFlipDataset`: torch glue. `python -m train.dataset <data_root>` to inspect.
+- `train/labeling.py` — pure-python session indexing + multi-head label building (torch-free, unit-tested).
+- `tests/` — `python -m unittest discover tests`. Pure-python tests run anywhere; torch-gated tests skip if torch missing. `tests/synth.py` writes synthetic recorder sessions for tests.
 - `train/transforms.py` — HSV color masks + resize + frame-stack concat (per-tower input).
 - `train/config.py` — `DataConfig`: action grid, vocab, mask specs (PLACEHOLDER colors — retune).
 - `model/policy.py` — `FlipperPolicy`: two ConvNeXt-Tiny towers (timm) + trunk + six action heads.
 - `train/bc.py` — BC training script. Device auto (CUDA/MPS/CPU), backbone-freeze warmup, per-session temporal val split, checkpoints to `checkpoints/{last,best}.pt`.
-- `env/osrs_env.py` *(not yet)* — gymnasium wrapper for online play / RL.
+- `env/osrs_env.py` — `OSRSFlipEnv` gymnasium env. Live capture loop + bbox-clamped action exec + foreground/rate-limit safety. Used by rollout + (later) PPO.
+- `env/rollout.py` — load a checkpoint, run argmax actions live. F12 kill switch. `--dry-run` validates env init without acting.
+- `env/input_backends/{win,mac}.py` — input emulation. Windows: `pydirectinput`. macOS: `pyautogui` (needs Accessibility permission).
 
 ## Constraints (hard)
 - **Pixel-only input.** Plugin internals are private and OFF-LIMITS as a teacher signal. Model learns from RGB + HSV color masks only.
